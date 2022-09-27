@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 // referredValueSavedHere
 import React, { useEffect, useState, useRef } from "react";
 import {
@@ -1059,30 +1060,9 @@ export const DataEntryForm = observer(() => {
 
 	const [allowSave, setAllowSave] = useState(true);
 	const localstoragekey = "[object Object]";
-	useEffect(() => {
 
-		const lsdata = JSON.parse(localStorage.getItem(localstoragekey));
-		if (!!lsdata) {
-			localStorage.removeItem(localstoragekey);
-			console.log("local storage data", lsdata);
-			if (lsdata.Flag == 1)
-				setAllowSave(false);
-			let dataUrl = `//10.0.0.1/api/32/events/query.json?NIN=${lsdata.Personid}`
-
-			fetch(dataUrl).then(res => res.json()).then((res) => {
-				console.log("ls api response", res);
-
-				if (!!res && res.rows.length > 0) {
-					const headers = res.headers.map(h => h.name)
-
-					
-						res.rows.forEach(row => {
-							headers.forEach((h, idx) => {
-								form.setFieldsValue({ h: row[idx] })
-							});
-						})
-				}	else {
-						form.setFieldsValue({ MOstDqSY0gO: lsdata.Personid })	
+	const setFormDataWithLocalStorage = (lsdata) => {
+		form.setFieldsValue({ MOstDqSY0gO: lsdata.Personid })	
 
 						const sex = lsdata.Gender == "M" ? "Male": lsdata.Gender == "F" ? "Female" : null;
 						form.setFieldsValue({"e96GB4CXyd3": sex });
@@ -1100,8 +1080,42 @@ export const DataEntryForm = observer(() => {
 						let years = moment().diff(dob, "years");			
 						form.setFieldsValue({ q7e7FOXKnOf: years });
 						setPersonsAge(years)	
-					}
+	}
+	useEffect(() => {
+
+		const lsdata = JSON.parse(localStorage.getItem(localstoragekey));
+		if (!!lsdata) {
+			localStorage.removeItem(localstoragekey);
+			console.log("local storage data", lsdata);
+			if (lsdata.Flag == 1)
+				setAllowSave(false);
+			let dataUrl = `//localhost:10088/api/32/events/query.json?NIN=${lsdata.Personid}`
+			const dateFields = ["eventDate", "i8rrl8YWxLF", "RbrUuKFSqkZ"];
+
+			fetch(dataUrl)
+			.then(res => res.json())
+			.then((res) => {
+				console.log("ls api response", res);
+
+				if (!!res && res.rows.length > 0) {
+					const headers = res.headers.map(h => h.name)
+					// console.log("headersss", headers);					
+					res.rows.forEach(row => {
+						headers.forEach((h, idx) => {
+							// console.log("header", h)
+							
+							console.log("setting form data", { [h]: row[idx] })
+							const value = dateFields.includes(h) ? moment(row[idx]): row[idx];
+							form.setFieldsValue({ [`${h}`]: value })
+						});
+					})
+				} else {
+					setFormDataWithLocalStorage(lsdata);
+				}
 			
+			}).catch(e => {
+				console.error(e);
+				setFormDataWithLocalStorage(lsdata);
 			})
 			
 
@@ -1111,71 +1125,72 @@ export const DataEntryForm = observer(() => {
 				// "Gender":"M",
 				// "DoB":"30/10/1986"
 			// }', length: 1}
-		}
-		console.log("j5TIQx3gHyF is ", store.defaultValues.j5TIQx3gHyF);
-		console.log("defaultValues: ", store.defaultValues);
-		if (Object.keys(store.defaultValues).length) {
-			setEditing(true);
-			// Auto-populate form if it is an existing form being edited
-			if (store.defaultValues.QTKk2Xt8KDu) {
-				setUnderlyingCauseText(`${store.defaultValues.QTKk2Xt8KDu}`);
-			}
-			if (store.defaultValues.sJhOdGLD5lj) {
-				setUnderlyingCauseCode(`${store.defaultValues.sJhOdGLD5lj}`);
-			}
-			if (store.defaultValues.t5nTEmlScSt) {
-				setChosenSubcounty(`${store.defaultValues.t5nTEmlScSt}`);
-			}
-			if (store.defaultValues.u44XP9fZweA) {
-				setChosenDistrict(`${store.defaultValues.u44XP9fZweA}`);
-			}			
-			if (store.defaultValues.QDHeWslaEoH) {
-				setChosenFacility(`${store.defaultValues.QDHeWslaEoH}`);
-			}
-			setUnderlyingCauseChosen(true);
-			if (store.defaultValues.e96GB4CXyd3) {
-				setPersonsGender(`${store.defaultValues.e96GB4CXyd3}`);
-			}
-			if (store.defaultValues.q7e7FOXKnOf) {
-				setPersonsAge(Number(`${store.defaultValues.q7e7FOXKnOf}`));
-			}
-			if (store.defaultValues.zwKo51BEayZ) {
-				setChosenRegion(`${store.defaultValues.zwKo51BEayZ}`);
-			}
-			// setChosenFacility(`${store.defaultValues.referredValueSavedHere}`);
-			if (store.defaultValues.q7e7FOXKnOf) {
-				form.setFieldsValue({
-					q7e7FOXKnOf: Number(`${store.defaultValues.q7e7FOXKnOf}`),
-				});
-				// console.log("Chosen district is =>", store.defaultValues);
-			}
-
-			if (store.defaultValues.twVlVWM3ffz) {
-				setApprovalStatusFromEditedForm(
-					`${store.defaultValues.twVlVWM3ffz}`
-				);
-			}
-
-			if (store.defaultValues.lu9BiHPxNqH) {
-				setDeclarationsDefault({
-					u9tYUv6AM51: store.defaultValues.u9tYUv6AM51 ? true : false,
-					ZXZZfzBpu8a: store.defaultValues.ZXZZfzBpu8a ? true : false,
-					cp5xzqVU2Vw: store.defaultValues.cp5xzqVU2Vw ? true : false,
-					lu9BiHPxNqH: `${store.defaultValues.lu9BiHPxNqH}`,
-				});
-			} else {
-				setDeclarationsDefault({
-					u9tYUv6AM51: store.defaultValues.u9tYUv6AM51 ? true : false,
-					ZXZZfzBpu8a: store.defaultValues.ZXZZfzBpu8a ? true : false,
-					cp5xzqVU2Vw: store.defaultValues.cp5xzqVU2Vw ? true : false,
-					lu9BiHPxNqH: "",
-				});
-			}
 		} else {
-			// creating new event
-			store.engine.link.fetch('/api/33/system/id.json').then(({ codes }) => {
-				form.setFieldsValue({ ZKBE8Xm9DJG: codes[0] })
-			})
+			console.log("j5TIQx3gHyF is ", store.defaultValues.j5TIQx3gHyF);
+			console.log("defaultValues: ", store.defaultValues);
+			if (Object.keys(store.defaultValues).length) {
+				setEditing(true);
+				// Auto-populate form if it is an existing form being edited
+				if (store.defaultValues.QTKk2Xt8KDu) {
+					setUnderlyingCauseText(`${store.defaultValues.QTKk2Xt8KDu}`);
+				}
+				if (store.defaultValues.sJhOdGLD5lj) {
+					setUnderlyingCauseCode(`${store.defaultValues.sJhOdGLD5lj}`);
+				}
+				if (store.defaultValues.t5nTEmlScSt) {
+					setChosenSubcounty(`${store.defaultValues.t5nTEmlScSt}`);
+				}
+				if (store.defaultValues.u44XP9fZweA) {
+					setChosenDistrict(`${store.defaultValues.u44XP9fZweA}`);
+				}			
+				if (store.defaultValues.QDHeWslaEoH) {
+					setChosenFacility(`${store.defaultValues.QDHeWslaEoH}`);
+				}
+				setUnderlyingCauseChosen(true);
+				if (store.defaultValues.e96GB4CXyd3) {
+					setPersonsGender(`${store.defaultValues.e96GB4CXyd3}`);
+				}
+				if (store.defaultValues.q7e7FOXKnOf) {
+					setPersonsAge(Number(`${store.defaultValues.q7e7FOXKnOf}`));
+				}
+				if (store.defaultValues.zwKo51BEayZ) {
+					setChosenRegion(`${store.defaultValues.zwKo51BEayZ}`);
+				}
+				// setChosenFacility(`${store.defaultValues.referredValueSavedHere}`);
+				if (store.defaultValues.q7e7FOXKnOf) {
+					form.setFieldsValue({
+						q7e7FOXKnOf: Number(`${store.defaultValues.q7e7FOXKnOf}`),
+					});
+					// console.log("Chosen district is =>", store.defaultValues);
+				}
+
+				if (store.defaultValues.twVlVWM3ffz) {
+					setApprovalStatusFromEditedForm(
+						`${store.defaultValues.twVlVWM3ffz}`
+					);
+				}
+
+				if (store.defaultValues.lu9BiHPxNqH) {
+					setDeclarationsDefault({
+						u9tYUv6AM51: store.defaultValues.u9tYUv6AM51 ? true : false,
+						ZXZZfzBpu8a: store.defaultValues.ZXZZfzBpu8a ? true : false,
+						cp5xzqVU2Vw: store.defaultValues.cp5xzqVU2Vw ? true : false,
+						lu9BiHPxNqH: `${store.defaultValues.lu9BiHPxNqH}`,
+					});
+				} else {
+					setDeclarationsDefault({
+						u9tYUv6AM51: store.defaultValues.u9tYUv6AM51 ? true : false,
+						ZXZZfzBpu8a: store.defaultValues.ZXZZfzBpu8a ? true : false,
+						cp5xzqVU2Vw: store.defaultValues.cp5xzqVU2Vw ? true : false,
+						lu9BiHPxNqH: "",
+					});
+				}
+			} else {
+				// creating new event
+				store.engine.link.fetch('/api/33/system/id.json').then(({ codes }) => {
+					form.setFieldsValue({ ZKBE8Xm9DJG: codes[0] })
+				})
+			}
 		}
 	}, [store.defaultValues]);
 
